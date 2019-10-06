@@ -118,63 +118,71 @@ while 1:
                 # Stand by
                 if (key == 1):
                         print "Stand by (" + str(key) + ")"
-                        write_seatalk("02", "FD")
                         beep(2)
+                        write_seatalk("02", "FD")
                 # Auto
-                if (key == 2):
+                if (key == 2 and mode == MODE_NORMAL):
                         print "Auto (" + str(key) + ")"
-                        write_seatalk("01", "FE")
                         beep(1)
+                        write_seatalk("01", "FE")
+                # Auto steer back
+                if (key == 2 and mode == MODE_STEER_INTO_WIND):
+                        print "Steer previous wind angle"
+                        beep(3)
+                        steer_into_wind.steer_previous_angle()
+                        mode = MODE_NORMAL
 
                 # +1
                 if (key == 4):
                         print "+1 (" + str(key) + ")"
-                        write_seatalk("07", "F8")
                         beep(1)
+                        write_seatalk("07", "F8")
                 # +10
                 if (key == 8):
                         print "+10 (" + str(key) + ")"
-                        write_seatalk("08", "F7")
                         beep(2)
+                        write_seatalk("08", "F7")
                 # -10
                 if (key == 16):
                         print "-10 (" + str(key) + ")"
-                        write_seatalk("06", "F9")
                         beep(2)
+                        write_seatalk("06", "F9")
                 # -1
                 if (key == 32):
                         print "-1 (" + str(key) + ")"
-                        write_seatalk("05", "FA")
                         beep(1)
+                        write_seatalk("05", "FA")
 
                 # Track -10 & +10
                 if (key == 24):
                         print "Track (" + str(key) + ")"
-                        write_seatalk("28", "D7")
                         beep(3)
+                        write_seatalk("28", "D7")
                 # Tack Port -1 & -10
                 if (key == 48):
                         print "Tack Port (" + str(key) + ")"
-                        write_seatalk("21", "DE")
                         beep(3)
+                        write_seatalk("21", "DE")
                 # Tack Starboard +1 & +10
                 if (key == 12):
                         print "Tack Starboard (" + str(key) + ")"
-                        write_seatalk("22", "DD")
                         beep(3)
+                        write_seatalk("22", "DD")
                 # Toggle auto seastate +1 & -1
                 if (key == 36):
                         print "Toggle auto seastate (" + str(key) + ")"
-                        write_seatalk("20", "DF")
                         beep(3)
+                        write_seatalk("20", "DF")
 
                 if (key == 3 and mode == MODE_NORMAL):
                         print "Steer into wind"
+                        beep(3)
                         steer_into_wind.steer_into_wind()
+                        mode = MODE_STEER_INTO_WIND
 
 
                 try:
-                        os.system('ssh tc@10.10.10.3 "echo ' + str(key) + ' > /tmp/remote"')
+                        os.system('ssh tc@10.10.10.3 "echo ' + str(key) + ' > /tmp/remote" & ')
                 except:
                         pass
 
