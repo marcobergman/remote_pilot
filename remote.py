@@ -4,6 +4,7 @@ import RPi.GPIO as GPIO
 import time
 import serial
 import os
+import steer_into_wind
 
 # ST2000 remote control with Raspberry Pi 2
 # Marco Bergman 2019
@@ -33,6 +34,9 @@ P10 = 17   # Plus 10    GPIO 17 (pin# 11) BLUE
 P1 = 18    # Plus 1     GPIO 18 (pin# 12) YELLOW
 SB = 23    # Standby    GPIO 23 (pin# 16) WHITE
 BUZZER = 25 # Buzzer    GPIO 25 (pin# 22) WHITE
+
+MODE_NORMAL = 1
+MODE_STEER_INTO_WIND = 2
 
 # Long press threshold
 THRESHOLD = 10
@@ -79,6 +83,8 @@ def beep(b):
 
 
 beep(3)
+
+mode=MODE_NORMAL
 
 while 1:
         # wait for a button to be pressed
@@ -161,6 +167,11 @@ while 1:
                         print "Toggle auto seastate (" + str(key) + ")"
                         write_seatalk("20", "DF")
                         beep(3)
+
+                if (key == 3 and mode == MODE_NORMAL):
+                        print "Steer into wind"
+                        steer_into_wind.steer_into_wind()
+
 
                 try:
                         os.system('ssh tc@10.10.10.3 "echo ' + str(key) + ' > /tmp/remote"')
