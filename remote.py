@@ -4,7 +4,6 @@ import RPi.GPIO as GPIO
 import time
 import serial
 import os
-import steer_into_wind
 
 # ST2000 remote control with Raspberry Pi 2
 # Marco Bergman 2019
@@ -56,6 +55,56 @@ def write_seatalk (xx, yy):
                 ser.write(b'\x11' + chr(int(xx, 16)) + chr(int(yy, 16)))
                 ser.close()
 
+angle = 0
+previous_angle = 0
+
+def send_command(command):
+        global angle
+        print "command="+str(command)
+
+        if command == -10:
+                write_seatalk("06", "F9")
+        if command == -1:
+                write_seatalk("05", "FA")
+        if command == +1:
+                write_seatalk("07", "F8")
+        if command == +10:
+                write_seatalk("08", "F7")
+        angle = angle - command
+
+
+def steer_to_angle(angle_to_steer_to):
+        global angle
+        angle = angle_to_steer_to
+
+        while angle != 0:
+                if angle <= -10:
+                        send_command(-10)
+                if angle > -10 and angle < 0:
+                        send_command(-1)
+                if angle > 0 and angle < 10:
+                        send_command(+1)
+                if angle >= 10:
+                        send_command(+10)
+
+def steer_into_wind():
+        global previous_angle
+
+        with open('/tmp/AWA', 'r') as myfile:
+                line = myfile.read().replace("\n", "")
+                awa = int(line)
+
+        angle=(awa+180) % 360-180
+        previous_angle = angle
+        print "awa=" + str(awa) + "; angle=" + str(angle)
+
+        steer_to_angle(angle)
+
+
+def steer_previous_angle():
+        global previous_angle
+
+        steer_to_angle(-previous_angle)
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(SB, GPIO.IN, pull_up_down=GPIO.PUD_UP)  # Stand By:   1
@@ -129,7 +178,7 @@ while 1:
                 if (key == 2 and mode == MODE_STEER_INTO_WIND):
                         print "Steer previous wind angle"
                         beep(3)
-                        steer_into_wind.steer_previous_angle()
+                        steer_previous_angle()
                         mode = MODE_NORMAL
 
                 # +1
@@ -177,7 +226,7 @@ while 1:
                 if (key == 3 and mode == MODE_NORMAL):
                         print "Steer into wind"
                         beep(3)
-                        steer_into_wind.steer_into_wind()
+                        steer_into_wind()
                         mode = MODE_STEER_INTO_WIND
 
 
