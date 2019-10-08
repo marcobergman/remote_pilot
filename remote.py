@@ -90,9 +90,12 @@ def steer_to_angle(angle_to_steer_to):
 def steer_into_wind():
         global previous_angle
 
-        with open('/tmp/AWA', 'r') as myfile:
-                line = myfile.read().replace("\n", "")
-                awa = int(line)
+        try:
+                with open('/tmp/AWA', 'r') as myfile:
+                        line = myfile.read().replace("\n", "")
+                        awa = int(line)
+        except:
+                awa = 0
 
         angle=(awa+180) % 360-180
         previous_angle = angle
@@ -169,6 +172,7 @@ while 1:
                         print "Stand by (" + str(key) + ")"
                         beep(2)
                         write_seatalk("02", "FD")
+                        mode = MODE_NORMAL
                 # Auto
                 if (key == 2 and mode == MODE_NORMAL):
                         print "Auto (" + str(key) + ")"
