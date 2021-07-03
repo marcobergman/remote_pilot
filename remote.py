@@ -37,11 +37,18 @@ P1 = 18    # Plus 1 	GPIO 18 (pin# 12) YELLOW
 SB = 23    # Standby 	GPIO 23 (pin# 16) WHITE
 BUZZER = 25 # Buzzer 	GPIO 25 (pin# 22) WHITE
 
+# RF 433 switches
+AUR = 13    # Auto 	GPIO 24 (pin# 18) BROWN
+M1R = 26   # Minus 1 	GPIO 22 (pin# 15) ORANGE
+P1R = 19    # Plus 1 	GPIO 18 (pin# 12) YELLOW
+SBR = 6     # Standby 	GPIO 23 (pin# 16) WHITE
+
+
 MODE_NORMAL = 1
 MODE_STEER_INTO_WIND = 2
 
 # Long press threshold
-THRESHOLD = 10
+THRESHOLD = 6
 
 def write_seatalk (xx, yy):
 	# thanks to http://www.thomasknauf.de/seatalk.htm
@@ -157,6 +164,11 @@ GPIO.setup(P1, GPIO.IN, pull_up_down=GPIO.PUD_UP)  # +1:         4
 GPIO.setup(P10, GPIO.IN, pull_up_down=GPIO.PUD_UP) # +10:        8
 GPIO.setup(M10, GPIO.IN, pull_up_down=GPIO.PUD_UP) # -10:       16
 GPIO.setup(M1, GPIO.IN, pull_up_down=GPIO.PUD_UP)  # -1:        32
+
+GPIO.setup(SBR, GPIO.IN, pull_up_down=GPIO.PUD_UP)  # Stand By:   1
+GPIO.setup(AUR, GPIO.IN, pull_up_down=GPIO.PUD_UP)  # Auto:       2
+GPIO.setup(P1R, GPIO.IN, pull_up_down=GPIO.PUD_UP)  # +1:         4
+GPIO.setup(M1R, GPIO.IN, pull_up_down=GPIO.PUD_UP)  # -1:        32
 GPIO.setup(BUZZER, GPIO.OUT)
 
 
@@ -181,19 +193,19 @@ mode=MODE_NORMAL
 
 while 1:
 	# wait for a button to be pressed
-	while (GPIO.input(SB) == 1 and GPIO.input(AU) == 1 and GPIO.input(P1) == 1 and GPIO.input(P10) == 1 and GPIO.input(M10) == 1 and GPIO.input(M1) == 1 and remote_key == 0):
+	while (GPIO.input(SB) == 1 and GPIO.input(SBR) == 1 and GPIO.input(AU) == 1 and GPIO.input(AUR) == 1 and GPIO.input(P1) == 1 and GPIO.input(P1R) == 1 and GPIO.input(P10) == 1 and GPIO.input(M10) == 1 and GPIO.input(M1) == 1 and GPIO.input(M1R) == 1 and remote_key == 0):
 		time.sleep (0.05)
 
 	# wait for a possible second one or the key to be finished vibrating
 	time.sleep (0.05)
 	
 	# store the key (combination) in one variable
-	key = (1-GPIO.input(SB)) + 2*(1-GPIO.input(AU)) + 4*(1-GPIO.input(P1)) + 8*(1-GPIO.input(P10)) + 16*(1-GPIO.input(M10)) + 32*(1-GPIO.input(M1)) + remote_key;
+	key = (1-GPIO.input(SB)) + (1-GPIO.input(SBR)) + 2*(1-GPIO.input(AU)) + 2*(1-GPIO.input(AUR)) + 4*(1-GPIO.input(P1)) + 4*(1-GPIO.input(P1R)) + 8*(1-GPIO.input(P10)) + 16*(1-GPIO.input(M10)) + 32*(1-GPIO.input(M1)) + 32*(1-GPIO.input(M1R)) + remote_key;
 	remote_key = 0
 
 	# wait for a long press. Actually, there are no real interesting long presses to implement.
-	counter = 0.1
-	while (1==2): # (GPIO.input(SB) == 1 and GPIO.input(AU) == 1 and GPIO.input(P1) == 1 and GPIO.input(P10) == 1 and GPIO.input(M10) == 1 and GPIO.input(M1) == 1): 
+	counter = 0
+	while  (GPIO.input(SB) == 0 or GPIO.input(SBR) == 0 or GPIO.input(AU) == 0 or GPIO.input(AUR) == 0 or GPIO.input(P1) == 0 or GPIO.input(P1R) == 0 or GPIO.input(P10) == 0 or GPIO.input(M10) == 0 or GPIO.input(M1) == 0 or GPIO.input(M1R) == 0) and counter < 1000: 
 		time.sleep (0.1)
 		counter = counter + 1
 		if (counter > THRESHOLD):
@@ -202,8 +214,14 @@ while 1:
 			print ("Long " + str(key))
 			# Standby
 			if (key == 1):
-				print ("Standby (" + str(key) + ")")
+				print ("Standby LONG (" + str(key) + ")")
 				write_seatalk(b'\x02', b'\xFD')
+			if (key == 4):
+				key = 8
+				counter = 1000;
+			if (key == 32):
+				key = 16
+				counter = 1000;
 			beep(2)
 
 	# Short press
@@ -282,6 +300,6 @@ while 1:
 			pass
 
 	# Wait for key to be lifted
-	while  (GPIO.input(SB) == 0 or GPIO.input(AU) == 0 or GPIO.input(P1) == 0 or GPIO.input(P10) == 0 or GPIO.input(M10) == 0 or GPIO.input(M1) == 0):
+	while  (GPIO.input(SB) == 0 or GPIO.input(SBR) == 0 or GPIO.input(AU) == 0 or GPIO.input(AUR) == 0 or GPIO.input(P1) == 0 or GPIO.input(P1R) == 0 or GPIO.input(P10) == 0 or GPIO.input(M10) == 0 or GPIO.input(M1) == 0 or GPIO.input(M1R) == 0):
 		time.sleep (0.1)
 
