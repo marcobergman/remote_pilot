@@ -216,11 +216,17 @@ while 1:
 			if (key == 1):
 				print ("Standby LONG (" + str(key) + ")")
 				write_seatalk(b'\x02', b'\xFD')
+                        # +1 long press: +10
 			if (key == 4):
 				key = 8
 				counter = 1000;
+                        # -1 long press: -10
 			if (key == 32):
 				key = 16
+				counter = 1000;
+                        # STBY + AUTO long press = steer into wind
+			if (key == 3):
+				key = 1004
 				counter = 1000;
 			beep(2)
 
