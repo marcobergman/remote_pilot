@@ -77,6 +77,7 @@ print ("--- Listening to socket keys at TCP:7001")
 
 remote_key = 0
 keymap = {"s": 1, "a": 2, "u": 32, "i": 16, "o": 8, "p": 4}
+print ("--- [a]uto [s]tandby [uiop] = -10, -1, +1, +10")
 
 def read_socket_thread():
 	global remote_key
